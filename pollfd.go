@@ -196,8 +196,10 @@ func (fd *FD) Incref() error {
 	return nil
 }
 
-// Decref "unlocks" the FD structure after perfoeming misc. operations
-// on the underlying system file descriptor. See (*FD).Inref for more.
+// Decref "unlocks" the FD structure after performing misc. operations
+// on the underlying system file descriptor. See (*FD).Incref for
+// more. A runtime error (panic) is signaled if Decref is called for
+// an FD that has not been "locked" with Incref.
 func (fd *FD) Decref() {
 	if fd.fdmu.Decref() {
 		fd.destroy()
