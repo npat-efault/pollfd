@@ -1,8 +1,8 @@
 // +build darwin dragonfly freebsd linux netbsd openbsd
 
-// pollfd implements a file-descriptor type that can be used with Go
-// runtime's netpoll mechanism. A pollfd.FD is associated with a
-// system file-descriptor and can be used to Read-from and Write-to it
+// pollfd implements a file-descriptor type (FD) that can be used with
+// Go runtime's netpoll mechanism. A "pollfd.FD" is associated with a
+// system file-descriptor and can be used to read-from and write-to it
 // without forcing the runtime to create an OS-level thread for every
 // blocked operation. Blocked operations can, instead, be multiplexed
 // by the runtime on the same OS thread using the netpoller mechanism
@@ -108,7 +108,8 @@ func IsErrorTimeout(e error) bool {
 
 // Errors returned by pollfd functions and methods. In addition to
 // these, netpoll functions and methods may return the errors reported
-// by the underlying system calls (open(2), read(2), write(2), etc.)
+// by the underlying system calls (open(2), read(2), write(2), etc.),
+// as well as io.EOF and io.ErrUnexpectedEOF.
 var (
 	ErrTimeout error = netpoll.ErrTimeout // Operation timed-out
 	ErrClosing error = netpoll.ErrClosing // Operation on closed FD
@@ -116,7 +117,7 @@ var (
 
 // FD is a file descriptor that can be used with the Go runtime's
 // netpoller subsystem. Typically it is a file-descriptor connected to
-// a terminal, a pseudo terminal, a character device, a fifo (named
+// a terminal, a pseudo terminal, a character device, a FIFO (named
 // pipe), etc.
 type FD struct {
 	fdmu  netpoll.FdMutex
@@ -172,8 +173,8 @@ func (fd *FD) Sysfd() int {
 	return fd.sysfd
 }
 
-// Incref must be called to lock the FD structure before performing
-// misc. operations (i.e. ioctl, setsockopt, fcntl, etc) on the
+// Incref must be called to "lock" the FD structure before performing
+// misc. operations (e.g. ioctl(), setsockopt(), fcntl(), etc.) on the
 // underlying system file descriptor (see: (*FD).Sysfd). The typical
 // usage pattern is:
 //
@@ -183,6 +184,8 @@ func (fd *FD) Sysfd() int {
 //    defer fd.Decref()
 //    ... do misc operations on fd.Sysfd() ...
 //
+// By calling Incref the the file descriptor is protected from
+// concurent Close calls issued by other go-routines
 func (fd *FD) Incref() error {
 	if !fd.fdmu.Incref() {
 		return ErrClosing
@@ -190,7 +193,7 @@ func (fd *FD) Incref() error {
 	return nil
 }
 
-// Decref unlocks the FD structure after perfoeming misc. operations
+// Decref "unlocks" the FD structure after perfoeming misc. operations
 // on the underlying system file descriptor. See (*FD).Inref for more.
 func (fd *FD) Decref() {
 	if fd.fdmu.Decref() {
@@ -261,7 +264,8 @@ func (fd *FD) Close() error {
 // details. In addition Read honors the timeout set by
 // (*FD).SetDeadline and (*FD).SetReadDeadline. If no data are read
 // before the timeout expires Read returns with err == ErrTimeout (and
-// n == 0).
+// n == 0). If the read(2) system-call returns 0, Read returns with
+// err = io.EOF (and n == 0).
 func (fd *FD) Read(p []byte) (n int, err error) {
 	if err = fd.readLock(); err != nil {
 		return 0, err
@@ -299,7 +303,8 @@ func (fd *FD) Read(p []byte) (n int, err error) {
 // details. In addition Write honors the timeout set by
 // (*FD).SetDeadline and (*FD).SetWriteDeadline. If less than len(p)
 // data are writen before the timeout expires Write returns with err
-// == ErrTimeout (and n < len(p)).
+// == ErrTimeout (and n < len(p)). If the write(2) system-call returns
+// 0, Write returns with err == io.ErrUnexpectedEOF.
 func (fd *FD) Write(p []byte) (nn int, err error) {
 	if err := fd.writeLock(); err != nil {
 		return 0, err
@@ -345,7 +350,10 @@ func (fd *FD) Write(p []byte) (nn int, err error) {
 //   fd.SetReadDeadline(time.Now().Add(5 * time.Second))
 //   fd.SetWriteDeadline(time.Now().Add(5 * time.Second))
 //
-// A zero value for t, cancels (removes) the existing deadline.
+// A zero value for t, cancels (removes) the existing deadline:
+//
+//   fd.SetDeadline(time.Time{})
+//
 func (fd *FD) SetDeadline(t time.Time) error {
 	if err := fd.Incref(); err != nil {
 		return err
