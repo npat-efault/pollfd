@@ -107,7 +107,7 @@ func IsErrorTimeout(e error) bool {
 }
 
 // Errors returned by pollfd functions and methods. In addition to
-// these, netpoll functions and methods may return the errors reported
+// these, pollfd functions and methods may return the errors reported
 // by the underlying system calls (open(2), read(2), write(2), etc.),
 // as well as io.EOF and io.ErrUnexpectedEOF.
 var (
@@ -156,6 +156,9 @@ func FromSysfd(sysfd int, name string) (*FD, error) {
 	return newFD(sysfd, name)
 }
 
+// String returns a text representation of the FD structure formated
+// like this: {name sysfd}. Used when printing with %v or with
+// fmt.Print/Println.
 func (fd *FD) String() string {
 	return fmt.Sprintf("{\"%s\" %d}", fd.name, fd.sysfd)
 }
@@ -185,7 +188,7 @@ func (fd *FD) Sysfd() int {
 //    ... do misc operations on fd.Sysfd() ...
 //
 // By calling Incref the the file descriptor is protected from
-// concurent Close calls issued by other go-routines
+// concurent Close calls issued by other go-routines.
 func (fd *FD) Incref() error {
 	if !fd.fdmu.Incref() {
 		return ErrClosing
@@ -234,7 +237,7 @@ func (fd *FD) destroy() {
 	runtime.SetFinalizer(fd, nil)
 }
 
-// Close closes the file descriptor
+// Close closes the file descriptor.
 func (fd *FD) Close() error {
 	// TODO(npat): Is this really needed? Currently fd.pd.Lock()
 	// as well as fd.pd.Unlock() and fd.pd.Wakeup() are no-ops.
@@ -365,7 +368,7 @@ func (fd *FD) SetDeadline(t time.Time) error {
 
 // SetReadDeadline sets the deadline for Read operations on the
 // file-descriptor. The deadline is expressed as an absolute instance
-// in time. See also: (*FD).SetDeadline
+// in time. See also: (*FD).SetDeadline.
 func (fd *FD) SetReadDeadline(t time.Time) error {
 	if err := fd.Incref(); err != nil {
 		return err
@@ -377,7 +380,7 @@ func (fd *FD) SetReadDeadline(t time.Time) error {
 
 // SetWriteDeadline sets the deadline for Write operations on the
 // file-descriptor. The deadline is expressed as an absolute instance
-// in time. See also: (*FD).SetDeadline
+// in time. See also: (*FD).SetDeadline.
 func (fd *FD) SetWriteDeadline(t time.Time) error {
 	if err := fd.Incref(); err != nil {
 		return err

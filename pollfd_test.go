@@ -186,3 +186,44 @@ func TestReadWrite(t *testing.T) {
 		t.Fatal("Expected:", ErrClosing, "- Got:", err)
 	}
 }
+
+func TestClosed(t *testing.T) {
+	mkfifo(t)
+	fdr, err := Open(fifo, O_RO)
+	if err != nil {
+		t.Fatal("Open:", err)
+	}
+	err = fdr.Close()
+	if err != nil {
+		t.Fatal("Close:", err)
+	}
+	err = fdr.Close()
+	if err != ErrClosing {
+		t.Fatal("Expected:", ErrClosing, " - Got:", err)
+	}
+	b := make([]byte, 10)
+	_, err = fdr.Read(b)
+	if err != ErrClosing {
+		t.Fatal("Expected:", ErrClosing, " - Got:", err)
+	}
+	_, err = fdr.Write(b)
+	if err != ErrClosing {
+		t.Fatal("Expected:", ErrClosing, " - Got:", err)
+	}
+	err = fdr.SetReadDeadline(time.Time{})
+	if err != ErrClosing {
+		t.Fatal("Expected:", ErrClosing, " - Got:", err)
+	}
+	err = fdr.SetWriteDeadline(time.Time{})
+	if err != ErrClosing {
+		t.Fatal("Expected:", ErrClosing, " - Got:", err)
+	}
+	err = fdr.SetDeadline(time.Time{})
+	if err != ErrClosing {
+		t.Fatal("Expected:", ErrClosing, " - Got:", err)
+	}
+	err = fdr.Incref()
+	if err != ErrClosing {
+		t.Fatal("Expected:", ErrClosing, " - Got:", err)
+	}
+}
