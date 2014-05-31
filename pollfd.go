@@ -52,9 +52,7 @@
 //
 //       https://code.google.com/r/nickpatavalis-pollfd/
 //
-// but unless you really, really need it, or you just want to
-// toy-around with it... DON'T! (Because a non-standard standard
-// library is an oxymoron, and very bad for your karma)
+// but, unless you just want to toy-around with it, DON'T!
 //
 package pollfd
 

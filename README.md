@@ -1,5 +1,29 @@
 #pollfd [![GoDoc](https://godoc.org/github.com/npat-efault/pollfd?status.png)](https://godoc.org/github.com/npat-efault/pollfd)
 
+**ATTENTION** 
+
+In order to build and use the pollfd package, you
+must have a tweaked (non-standard) verion of the Go standard
+library, that exports an interface to the netpoller mechanism. You
+can download this from:
+
+```
+https://code.google.com/r/nickpatavalis-pollfd/
+```
+
+but, unless you just want to toy-around with it, DON'T!
+
+Take a look instead at:
+
+```
+https://github.com/npat-efault/poller
+```
+
+Which does, almost, the same thing without requiring special support
+from the Go runtime.
+
+**********
+
 pollfd implements a file-descriptor type (FD) that can be used with
 Go runtime's netpoll mechanism. A "pollfd.FD" is associated with a
 system file-descriptor and can be used to read-from and write-to it
@@ -46,17 +70,3 @@ if err != nil {
 Also, pollfd operations are thread-safe; the same FD can be used
 from multiple go-routines. It is, for example, safe to close a file
 descriptor blocked on a Read or Write call from another go-routine.
-
-**ATTENTION:** In order to build and use the pollfd package, you
-must have a tweaked (non-standard) verion of the Go standard
-library, that exports an interface to the netpoller mechanism. You
-can download this from:
-
-```
-https://code.google.com/r/nickpatavalis-pollfd/
-```
-
-but unless you really, really need it, or you just want to
-toy-around with it... DON'T! (Because a non-standard standard
-library is an oxymoron, and very bad for your karma)
-
