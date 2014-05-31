@@ -1,24 +1,22 @@
 #pollfd [![GoDoc](https://godoc.org/github.com/npat-efault/pollfd?status.png)](https://godoc.org/github.com/npat-efault/pollfd)
 
-## ATTENTION 
+>> **ATTENTION:** In order to build and use the pollfd package, you
+>> must have a tweaked (non-standard) verion of the Go standard
+>> library, that exports an interface to the netpoller mechanism. You
+>> can download this from:
+>> 
+>> ```
+>> https://code.google.com/r/nickpatavalis-pollfd/
+>> ```
+>> 
+>> but, unless you just want to toy-around with it, DON'T!
 
-In order to build and use the pollfd package, you
-must have a tweaked (non-standard) verion of the Go standard
-library, that exports an interface to the netpoller mechanism. You
-can download this from:
-
-```
-https://code.google.com/r/nickpatavalis-pollfd/
-```
-
-but, unless you just want to toy-around with it, DON'T!
-
-Take a look instead at:
-
-### [https://github.com/npat-efault/poller]
-
-Which does, almost, the same thing without requiring special support
-from the Go runtime.
+>> Take a look instead at:
+>>
+>> >> https://github.com/npat-efault/poller]
+>>
+>> Which does, almost, the same thing without requiring special support
+>> from the Go runtime.
 
 **********
 
